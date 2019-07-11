@@ -1,0 +1,12 @@
+*~
+*.swp
+*.ipr
+*.iml
+*.iws
+*.pyc
+.project
+.classpath
+.idea/
+target/
+dependency-reduced-pom.xml
+pom.xml.versionsBackup
