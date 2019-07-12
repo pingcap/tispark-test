@@ -4,10 +4,10 @@ import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types._
 
-object BatchWritePressureTest {
+object SparkJDBCPressureTest {
 
   def main(args: Array[String]): Unit = {
-    if (args.length < 7) {
+    if (args.length < 6) {
       throw new Exception("wrong arguments!")
     }
 
@@ -17,22 +17,18 @@ object BatchWritePressureTest {
     val path = args(3)
     val database = args(4)
     val table = args(5)
-    val skipCommitSecondaryKey = args(6)
-    val lockTTLSeconds = if(args.length > 7) args(7) else "3600"
-    val writeConcurrency = if(args.length > 8) args(8) else "0"
+    val repartition = if(args.length > 6) args(6).toInt else 0
 
     println(
       s"""
-        |tidbIP=$tidbIP
-        |tidbPort=$tidbPort
-        |pdAddr=$pdAddr
-        |path=$path
-        |database=$database
-        |table=$table
-        |skipCommitSecondaryKey=$skipCommitSecondaryKey
-        |lockTTLSeconds=$lockTTLSeconds
-        |writeConcurrency=$writeConcurrency
-      """.stripMargin)
+         |tidbIP=$tidbIP
+         |tidbPort=$tidbPort
+         |pdAddr=$pdAddr
+         |path=$path
+         |database=$database
+         |table=$table
+         |repartition=$repartition
+       """.stripMargin)
 
     val sparkConf = new SparkConf()
       .set("spark.tispark.write.enable", "true")
@@ -60,17 +56,22 @@ object BatchWritePressureTest {
     )
     )
 
-    val df = spark.read.schema(schema).option("sep", "|").csv(path)
+    var df = spark.read.schema(schema).option("sep", "|").csv(path)
     println(s"count=${df.count()}")
 
     val start = System.currentTimeMillis()
+
+    if(repartition > 0) {
+      df = df.repartition(repartition)
+    }
     df.write
-      .format("tidb")
-      .option("database", database)
-      .option("table", table)
-      .option("skipCommitSecondaryKey", skipCommitSecondaryKey)
-      .option("lockTTLSeconds", lockTTLSeconds)
-      .option("writeConcurrency", writeConcurrency)
+      .format("jdbc")
+      .option("url", s"jdbc:mysql://address=(protocol=tcp)(host=$tidbIP)(port=$tidbPort)/?user=root&password=" +
+        s"&useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&useSSL=false" +
+        s"&autoReconnect=true&failOverReadOnly=false&maxReconnects=10")
+      .option("dbtable", s"$database.$table")
+      .option("isolationLevel", "REPEATABLE_READ")
+      .option("driver", "com.mysql.jdbc.Driver")
       .mode("append")
       .save()
     val end = System.currentTimeMillis()

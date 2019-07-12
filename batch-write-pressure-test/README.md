@@ -8,5 +8,5 @@ bin/spark-submit \
 --total-executor-cores 120 \
 --conf "spark.executor.extraJavaOptions=-XX:+UseG1GC" \
 batch-write-pressure-test-1.0.0-SNAPSHOT.jar \
-$path $database $table $skipCommitSecondaryKey $lockTTLSeconds $writeConcurrency
+$path $$tidbIP $tidbPort $pdAddr $database $table $skipCommitSecondaryKey $lockTTLSeconds $writeConcurrency
 
