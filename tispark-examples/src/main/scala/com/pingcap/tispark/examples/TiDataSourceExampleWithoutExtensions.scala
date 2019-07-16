@@ -32,21 +32,21 @@ object TiDataSourceExampleWithoutExtensions {
     val spark = SparkSession.builder.config(sparkConf).getOrCreate()
     val sqlContext = spark.sqlContext
 
-    readUsingDataSourceAPI(sqlContext)
+    readUsingScala(sqlContext)
 
-    pushDownUsingDataSourceAPI(sqlContext)
+    writeUsingScala(sqlContext)
 
-    writeUsingDataSourceAPI(sqlContext)
+    //pushDownUsingDataSourceAPI(sqlContext)
 
-    readWithSparkSQLAPI(sqlContext)
+    //readWithSparkSQLAPI(sqlContext)
 
     // TODO: to support
     //readWithSchemaUsingSparkSQLAPI(sqlContext)
 
-    writeUsingSparkSQLAPI(sqlContext)
+    //writeUsingSparkSQLAPI(sqlContext)
   }
 
-  private def readUsingDataSourceAPI(sqlContext: SQLContext): DataFrame = {
+  private def readUsingScala(sqlContext: SQLContext): DataFrame = {
     // Common options can also be passed in,
     // e.g. spark.tispark.plan.allow_agg_pushdown, spark.tispark.plan.allow_index_read, etc.
     // spark.tispark.plan.allow_index_read is optional
@@ -66,6 +66,44 @@ object TiDataSourceExampleWithoutExtensions {
       .load()
     df.show()
     df
+  }
+
+  private def writeUsingScala(sqlContext: SQLContext): Unit = {
+    /* create table before run the code
+     CREATE TABLE tpch_test.target_table_customer (
+      `C_CUSTKEY` int(11) NOT NULL,
+      `C_NAME` varchar(25) NOT NULL,
+      `C_ADDRESS` varchar(40) NOT NULL,
+      `C_NATIONKEY` int(11) NOT NULL,
+      `C_PHONE` char(15) NOT NULL,
+      `C_ACCTBAL` decimal(15,2) NOT NULL,
+      `C_MKTSEGMENT` char(10) NOT NULL,
+      `C_COMMENT` varchar(117) NOT NULL
+    )
+     */
+
+    // Common options can also be passed in,
+    // e.g. spark.tispark.plan.allow_agg_pushdown, spark.tispark.plan.allow_index_read, etc.
+    // spark.tispark.plan.allow_index_read is optional
+    val tidbOptions: Map[String, String] = Map(
+      "tidb.addr" -> "127.0.0.1",
+      "tidb.password" -> "",
+      "tidb.port" -> "4000",
+      "tidb.user" -> "root",
+      "spark.tispark.pd.addresses" -> "127.0.0.1:2379"
+    )
+
+    val df = readUsingScala(sqlContext)
+
+    // Append
+    // target_table_append should exist in tidb
+    df.write
+      .format("tidb")
+      .options(tidbOptions)
+      .option("database", "tpch_test")
+      .option("table", "target_table_customer")
+      .mode("append")
+      .save()
   }
 
   private def pushDownUsingDataSourceAPI(sqlContext: SQLContext): DataFrame = {
@@ -91,32 +129,6 @@ object TiDataSourceExampleWithoutExtensions {
       .select("C_NAME")
     df.show()
     df
-  }
-
-  private def writeUsingDataSourceAPI(sqlContext: SQLContext): Unit = {
-    // Common options can also be passed in,
-    // e.g. spark.tispark.plan.allow_agg_pushdown, spark.tispark.plan.allow_index_read, etc.
-    // spark.tispark.plan.allow_index_read is optional
-    val tidbOptions: Map[String, String] = Map(
-      "tidb.addr" -> "127.0.0.1",
-      "tidb.password" -> "",
-      "tidb.port" -> "4000",
-      "tidb.user" -> "root",
-      "spark.tispark.pd.addresses" -> "127.0.0.1:2379",
-      "spark.tispark.plan.allow_index_read" -> "true"
-    )
-
-    val df = readUsingDataSourceAPI(sqlContext)
-
-    // Append
-    // target_table_append should exist in tidb
-    df.write
-      .format("tidb")
-      .options(tidbOptions)
-      .option("database", "tpch_test")
-      .option("table", "target_table_append")
-      .mode("append")
-      .save()
   }
 
   private def readWithSparkSQLAPI(sqlContext: SQLContext): Unit = {

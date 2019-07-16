@@ -37,9 +37,9 @@ object TiDataSourceExampleWithExtensions {
     val spark = SparkSession.builder.config(sparkConf).getOrCreate()
     val sqlContext = spark.sqlContext
 
-    readUsingScala(sqlContext)
+    //readUsingScala(sqlContext)
 
-    //writeUsingScala(sqlContext)
+    writeUsingScala(sqlContext)
 
     //useAnotherTiDB(sqlContext)
   }
@@ -59,6 +59,20 @@ object TiDataSourceExampleWithExtensions {
   }
 
   def writeUsingScala(sqlContext: SQLContext): Unit = {
+    /* create table before run the code
+    CREATE TABLE tpch_test.target_table_orders (
+      `O_ORDERKEY` int(11) NOT NULL,
+      `O_CUSTKEY` int(11) NOT NULL,
+      `O_ORDERSTATUS` char(1) NOT NULL,
+      `O_TOTALPRICE` decimal(15,2) NOT NULL,
+      `O_ORDERDATE` date NOT NULL,
+      `O_ORDERPRIORITY` char(15) NOT NULL,
+      `O_CLERK` char(15) NOT NULL,
+      `O_SHIPPRIORITY` int(11) NOT NULL,
+      `O_COMMENT` varchar(79) NOT NULL
+    )
+     */
+
     // use tidb config in spark config if does not provide in data source config
     val tidbOptions: Map[String, String] = Map()
 
@@ -76,7 +90,7 @@ object TiDataSourceExampleWithExtensions {
       .format("tidb")
       .options(tidbOptions)
       .option("database", "tpch_test")
-      .option("table", "target_table_append")
+      .option("table", "target_table_orders")
       .mode("append")
       .save()
   }
@@ -84,7 +98,7 @@ object TiDataSourceExampleWithExtensions {
   def useAnotherTiDB(sqlContext: SQLContext): Unit ={
     // tidb config priority: data source config > spark config
     val tidbOptions: Map[String, String] = Map(
-      "tidb.addr" -> "tidb",
+      "tidb.addr" -> "anotherTidbIP",
       "tidb.password" -> "",
       "tidb.port" -> "4000",
       "tidb.user" -> "root",
