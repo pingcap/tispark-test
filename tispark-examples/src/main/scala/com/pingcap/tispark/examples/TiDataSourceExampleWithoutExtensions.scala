@@ -21,7 +21,7 @@ import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
 /**
  * before run the code in IDE, please enable maven profile `local-debug`
  */
-object TiDataSourceExample {
+object TiDataSourceExampleWithoutExtensions {
 
   def main(args: Array[String]): Unit = {
     val sparkConf = new SparkConf()
