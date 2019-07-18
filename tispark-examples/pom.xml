@@ -55,7 +55,6 @@
             <groupId>com.pingcap.tispark</groupId>
             <artifactId>tispark-assembly</artifactId>
             <version>2.2.0-SNAPSHOT</version>
-            <scope>${spark.scope}</scope>
         </dependency>
     </dependencies>
 
@@ -132,7 +131,9 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.1.0</version>
                 <executions>
                     <execution>
                         <id>assemble-all</id>
