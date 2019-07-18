@@ -11,13 +11,23 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spark.version>2.3.2</spark.version>
+        <spark.version>2.3.3</spark.version>
         <java.version>1.8</java.version>
         <scala.version>2.11</scala.version>
         <spark.scope>provided</spark.scope>
     </properties>
 
     <profiles>
+        <profile>
+            <id>spark-2.3</id>
+            <!--Use Default Global settings-->
+        </profile>
+        <profile>
+            <id>spark-2.4</id>
+            <properties>
+                <spark.version>2.4.3</spark.version>
+            </properties>
+        </profile>
         <profile>
             <id>local-debug</id>
             <properties>
@@ -43,7 +53,7 @@
 
         <dependency>
             <groupId>com.pingcap.tispark</groupId>
-            <artifactId>tispark-core</artifactId>
+            <artifactId>tispark-assembly</artifactId>
             <version>2.2.0-SNAPSHOT</version>
             <scope>${spark.scope}</scope>
         </dependency>
