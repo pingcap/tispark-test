@@ -1,0 +1,16 @@
+---
+
+- name: Kill spark
+  shell: ps -ef | grep spark | awk '{print $2}' | xargs -I {} kill -9 {}
+  ignore_errors: yes
+
+- name: Copy conf
+  copy: src=spark-env.sh dest=/home/pingcap/spark-2.1.0-bin-hadoop2.7/conf/spark-env.sh
+
+
+- name: Start Master
+  shell: /home/pingcap/spark-2.1.0-bin-hadoop2.7/sbin/start-master.sh -h {{ hostvars[groups['spark_master'][0]]['ansible_default_ipv4']['address'] }}
+  when: master is defined
+
+- name: Start Slave
+  shell: /home/pingcap/spark-2.1.0-bin-hadoop2.7/sbin/start-slave.sh spark://{{ hostvars[groups['spark_master'][0]]['ansible_default_ipv4']['address'] }}:7077
