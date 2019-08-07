@@ -187,7 +187,7 @@ def call(ghprbCommentBody) {
                             sleep 60
                             """
 
-                            timeout(60) {
+                            timeout(120) {
                                 run_test(chunk_suffix)
                             }
                         } catch (err) {
