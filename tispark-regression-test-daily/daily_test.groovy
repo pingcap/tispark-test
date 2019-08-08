@@ -234,8 +234,9 @@ def call(ghprbCommentBody) {
 }
 
 def runDailyIntegrationTest() {
+    call("tikv=v2.0.11 tidb=v2.0.11 pd=v2.0.11")
     call("tikv=master tidb=master pd=master")
-    call("tikv=v3.0.1 tidb=v3.0.1 pd=v3.0.1")
+    call("tikv=v3.0.2 tidb=v3.0.2 pd=v3.0.2")
     call("tikv=v2.1.15 tidb=v2.1.15 pd=v2.1.15")
 }
 
