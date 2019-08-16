@@ -111,6 +111,7 @@ def call(ghprbCommentBody) {
 
                         sh """
                         cp .ci/log4j-ci.properties core/src/test/resources/log4j.properties
+                        cp .ci/tidb_config-for-daily-test.properties core/src/test/resources/tidb_config.properties
                         bash core/scripts/version.sh
                         bash core/scripts/fetch-test-data.sh
                         mv core/src/test core-test/src/
@@ -177,9 +178,9 @@ def call(ghprbCommentBody) {
                             killall -9 tikv-server || true
                             killall -9 pd-server || true
                             sleep 10
-                            bin/pd-server --name=pd --data-dir=pd &>pd.log &
+                            bin/pd-server --name=pd --data-dir=pd --config=go/src/github.com/pingcap/tispark/config/pd.toml &>pd.log &
                             sleep 30
-                            bin/tikv-server --pd=127.0.0.1:2379 -s tikv --addr=0.0.0.0:20160 --advertise-addr=127.0.0.1:20160 &>tikv.log &
+                            bin/tikv-server --pd=127.0.0.1:2379 -s tikv --addr=0.0.0.0:20160 --advertise-addr=127.0.0.1:20160 --config=go/src/github.com/pingcap/tispark/config/tikv.toml &>tikv.log &
                             sleep 30
                             ps aux | grep '-server' || true
                             curl -s 127.0.0.1:2379/pd/api/v1/status || true
@@ -234,7 +235,6 @@ def call(ghprbCommentBody) {
 }
 
 def runDailyIntegrationTest() {
-    call("tikv=v2.0.11 tidb=v2.0.11 pd=v2.0.11")
     call("tikv=master tidb=master pd=master")
     call("tikv=v3.0.2 tidb=v3.0.2 pd=v3.0.2")
     call("tikv=v2.1.15 tidb=v2.1.15 pd=v2.1.15")
