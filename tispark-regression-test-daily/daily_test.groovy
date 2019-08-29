@@ -144,7 +144,7 @@ def call(ghprbCommentBody) {
                     sh """
                         export MAVEN_OPTS="-Xmx6G -XX:MaxPermSize=512M -XX:ReservedCodeCacheSize=51M"
                         mvn compile ${MVN_PROFILE}
-                        { time mvn --debug test ${MVN_PROFILE} -Dtest=moo ${mvnStr} ; } 2 > mvn.log
+                        { time mvn --debug test ${MVN_PROFILE} -Dtest=moo ${mvnStr} ; } 2> mvn.log
                     """
                 }
             }
