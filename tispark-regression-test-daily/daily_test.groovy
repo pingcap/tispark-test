@@ -7,6 +7,7 @@ def call(ghprbCommentBody) {
     def TIKV_BRANCH = "master"
     def PD_BRANCH = "master"
     def MVN_PROFILE = "-Pjenkins"
+    def TEST_MODE = "simple"
     def PARALLEL_NUMBER = 18
 
     // parse tidb branch
@@ -16,6 +17,7 @@ def call(ghprbCommentBody) {
     }
     m1 = null
     println "TIDB_BRANCH=${TIDB_BRANCH}"
+
     // parse pd branch
     def m2 = ghprbCommentBody =~ /pd\s*=\s*([^\s\\]+)(\s|\\|$)/
     if (m2) {
@@ -23,6 +25,7 @@ def call(ghprbCommentBody) {
     }
     m2 = null
     println "PD_BRANCH=${PD_BRANCH}"
+
     // parse tikv branch
     def m3 = ghprbCommentBody =~ /tikv\s*=\s*([^\s\\]+)(\s|\\|$)/
     if (m3) {
@@ -30,10 +33,17 @@ def call(ghprbCommentBody) {
     }
     m3 = null
     println "TIKV_BRANCH=${TIKV_BRANCH}"
+
     // parse mvn profile
     def m4 = ghprbCommentBody =~ /profile\s*=\s*([^\s\\]+)(\s|\\|$)/
     if (m4) {
         MVN_PROFILE = MVN_PROFILE + " -P${m4[0][1]}"
+    }
+
+    // parse test mode
+    def m5 = ghprbCommentBody =~ /mode\s*=\s*([^\s\\]+)(\s|\\|$)/
+    if (m5) {
+        TEST_MODE = "${m5[0][1]}"
     }
 
     def readfile = { filename ->
@@ -92,12 +102,21 @@ def call(ghprbCommentBody) {
                         deleteDir()
                         sh """
                         cp -R /home/jenkins/git/tispark/. ./
-                        find core/src -name '*Suite*' > test
+                        find core/src -name '*Suite*' | grep -v 'MultiColumnPKDataTypeSuite' > test
+                        shuf test -o  test2
+                        mv test2 test
+                        """
+
+                        if(TEST_MODE != "simple") {
+                            sh """
+                            find core/src -name '*MultiColumnPKDataTypeSuite*' >> test
+                            """
+                        }
+
+                        sh """
                         sed -i 's/core\\/src\\/test\\/scala\\///g' test
                         sed -i 's/\\//\\./g' test
                         sed -i 's/\\.scala//g' test
-                        shuf test -o  test2
-                        mv test2 test
                         split test -n r/$PARALLEL_NUMBER test_unit_ -a 2 --numeric-suffixes=1
                         """
 
@@ -111,7 +130,6 @@ def call(ghprbCommentBody) {
 
                         sh """
                         cp .ci/log4j-ci.properties core/src/test/resources/log4j.properties
-                        cp .ci/tidb_config-for-daily-test.properties core/src/test/resources/tidb_config.properties
                         bash core/scripts/version.sh
                         bash core/scripts/fetch-test-data.sh
                         mv core/src/test core-test/src/
@@ -236,9 +254,9 @@ def call(ghprbCommentBody) {
 }
 
 def runDailyIntegrationTest() {
-    call("tikv=master tidb=master pd=master")
-    call("tikv=v3.0.2 tidb=v3.0.2 pd=v3.0.2")
-    call("tikv=v2.1.15 tidb=v2.1.15 pd=v2.1.15")
+    call("tikv=master tidb=master pd=master mode=simple")
+    call("tikv=v3.0.2 tidb=v3.0.2 pd=v3.0.2 mode=simple")
+    call("tikv=v2.1.15 tidb=v2.1.15 pd=v2.1.15 mode=simple")
 }
 
 return this
