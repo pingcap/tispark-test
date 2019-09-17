@@ -43,9 +43,8 @@
 
         <dependency>
             <groupId>com.pingcap.tispark</groupId>
-            <artifactId>tispark-core</artifactId>
-            <version>2.2.0-SNAPSHOT</version>
-            <scope>${spark.scope}</scope>
+            <artifactId>tispark-assembly</artifactId>
+            <version>2.2.0</version>
         </dependency>
     </dependencies>
 
