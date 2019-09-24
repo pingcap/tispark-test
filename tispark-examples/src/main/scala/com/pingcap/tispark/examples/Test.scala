@@ -29,7 +29,6 @@ object Test {
       .setIfMissing("tidb.port", "4000")
       .setIfMissing("tidb.user", "root")
       .setIfMissing("spark.tispark.pd.addresses", "localhost:2379")
-      .set("spark.driver.extraJavaOptions", "-Dio.netty.maxDirectMemory=1 -XX:MaxDirectMemorySize=10M")
 
     val spark = SparkSession.builder.config(sparkConf).enableHiveSupport().getOrCreate()
 
@@ -66,7 +65,9 @@ object Test {
     spark.sql("create table t(c1 int, c2 int)")
 
 //    spark.sql(s"insert overwrite table t select x.c1, x.c2 from test.t x join test.t y on x.c1 = y.c1").explain
-    spark.sql(s"insert overwrite table t select * from test.t").explain
+//    for (_ <- 0 until 100) {
+      spark.sql(s"insert overwrite table t select * from test.t").explain
+//    }
     spark.sql("select count(*) from t").show
     spark.sql("select * from t").show
   }
