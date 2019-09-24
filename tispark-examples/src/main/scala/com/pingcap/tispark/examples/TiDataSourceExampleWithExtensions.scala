@@ -85,7 +85,6 @@ object TiDataSourceExampleWithExtensions {
       .load()
 
     // Append
-    // if target_table_append does not exist, it will be created automatically
     df.write
       .format("tidb")
       .options(tidbOptions)
