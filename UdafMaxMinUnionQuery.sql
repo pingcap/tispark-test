@@ -1,5 +1,3 @@
-# 22:38:10 Default schema: test
-# 22:38:10 Caching metadata for dbi:mysql:host=127.0.0.1:port=3306:user=root:password=123:database=test
 select min(distinct `col_decimal_6_3_signed`) as a, max(distinct `pk`) as b from (select * from `table40_int_autoinc` union all select * from `table50_int_autoinc`) tmp order by a, b;
 select min(`col_bigint_unsigned_key`) as a, max(`col_float_unsigned`) as b from (select * from `table90_int_autoinc` union all select * from `table30_int_autoinc`) tmp group by `col_decimal_6_3_signed` order by a, b;
 select min(distinct `col_varchar_20`) as a, max(distinct `col_decimal_10_4_unsigned_key`) as b from (select * from `table50_int_autoinc` union all select * from `table20_int_autoinc`) tmp group by `col_decimal_10_4_signed` order by a, b;

@@ -1,5 +1,3 @@
-# 22:06:12 Default schema: test
-# 22:06:12 Caching metadata for dbi:mysql:host=127.0.0.1:port=3306:user=root:password=123:database=test
 select sum(distinct `col_decimal_6_3_signed`) as a from (select * from `table40_int_autoinc` union all select * from `table40_int_autoinc`) tmp order by a;
 select cast(sum(`col_double_unsigned`) as decimal(30, 6)) as a from (select * from `table80_int_autoinc` union all select * from `table20_int_autoinc`) tmp group by tmp.`col_decimal_6_3_unsigned_key` order by a;
 select cast(sum(`col_float_signed`) as decimal(30, 6)) as a from (select * from `table20_int_autoinc` union all select * from `table60_int_autoinc`) tmp order by a;

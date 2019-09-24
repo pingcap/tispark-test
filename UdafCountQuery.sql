@@ -1,5 +1,3 @@
-# 14:28:24 Default schema: test
-# 14:28:24 Caching metadata for dbi:mysql:host=127.0.0.1:port=4000:user=root:password=:database=test
 select count(distinct `col_decimal_6_3_signed`) as a from `table40_int_autoinc` group by `col_decimal_6_3_signed`, `col_bigint_unsigned` order by a;
 select count(`col_float_signed`) as a from `table20_int_autoinc` order by a;
 select count(distinct `col_varchar_20_key`) as a from `table20_int_autoinc` order by a;

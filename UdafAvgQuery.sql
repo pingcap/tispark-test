@@ -1,5 +1,3 @@
-# 14:48:15 Default schema: test
-# 14:48:15 Caching metadata for dbi:mysql:host=127.0.0.1:port=3307:user=root:password=:database=test
 select avg(distinct `col_decimal_6_3_signed`) as a from `table40_int_autoinc` group by `col_decimal_6_3_signed`, `col_bigint_unsigned` order by a;
 select a, avg(distinct b) as b from (select `col_bigint_unsigned_key` as a, `col_float_unsigned` as b from `table90_int_autoinc`) tmp group by a order by lower(a), b;
 select avg(`col_float_signed`) as a from `table20_int_autoinc` order by a;
