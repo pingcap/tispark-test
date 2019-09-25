@@ -8,5 +8,5 @@ The following test is or will be included in the daily test:
 | tidb/tikv/pd version | spark test version | test |
 | -------------------- | ------------------ | ---- |
 | master               | 2.4.3              | yes  |
-| v3.0.2               | 2.4.3              | yes  |
+| v3.0.3               | 2.4.3              | yes  |
 | v2.1.17              | 2.4.3              | yes  |
