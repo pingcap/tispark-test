@@ -28,6 +28,7 @@ object TiDataSourceExampleWithoutExtensions {
       .setIfMissing("spark.tispark.write.allow_spark_sql", "true")
       .setIfMissing("spark.master", "local[*]")
       .setIfMissing("spark.app.name", getClass.getName)
+      .setIfMissing("spark.tispark.write.without_lock_table", "true")
 
     val spark = SparkSession.builder.config(sparkConf).getOrCreate()
     val sqlContext = spark.sqlContext

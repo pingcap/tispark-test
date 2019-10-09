@@ -28,25 +28,27 @@ object TiDataSourceExampleWithExtensions {
       .setIfMissing("spark.master", "local[*]")
       .setIfMissing("spark.app.name", getClass.getName)
       .setIfMissing("spark.sql.extensions", "org.apache.spark.sql.TiExtensions")
-      .setIfMissing("spark.tispark.tidb.addr", "tidb")
-      .setIfMissing("spark.tispark.tidb.password", "")
+      .setIfMissing("spark.tispark.tidb.addr", "127.0.0.1")
       .setIfMissing("spark.tispark.tidb.port", "4000")
-      .setIfMissing("spark.tispark.tidb.user", "root")
       .setIfMissing("spark.tispark.pd.addresses", "127.0.0.1:2379")
+      //.setIfMissing("spark.tispark.write.without_lock_table", "true")
 
     val spark = SparkSession.builder.config(sparkConf).getOrCreate()
     val sqlContext = spark.sqlContext
 
-    //readUsingScala(sqlContext)
+    readUsingScala(sqlContext)
 
-    writeUsingScala(sqlContext)
+    //writeUsingScala(sqlContext)
 
     //useAnotherTiDB(sqlContext)
   }
 
   def readUsingScala(sqlContext: SQLContext): Unit = {
     // use tidb config in spark config if does not provide in data source config
-    val tidbOptions: Map[String, String] = Map()
+    val tidbOptions: Map[String, String] = Map(
+      "tidb.user" -> "root",
+      "tidb.password" -> ""
+    )
     val df = sqlContext.read
       .format("tidb")
       .options(tidbOptions)
@@ -74,7 +76,7 @@ object TiDataSourceExampleWithExtensions {
      */
 
     // use tidb config in spark config if does not provide in data source config
-    val tidbOptions: Map[String, String] = Map()
+    val tidbOptions: Map[String, String] = Map("tidb.user" -> "root", "tidb.password" -> "")
 
     // data to write
     val df = sqlContext.read
