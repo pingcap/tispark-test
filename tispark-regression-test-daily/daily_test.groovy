@@ -91,7 +91,7 @@ def call(ghprbCommentBody) {
                     sh "curl ${FILE_SERVER_URL}/download/builds/pingcap/pd/${pd_sha1}/centos7/pd-server.tar.gz | tar xz"
                     stash includes: "bin/**", name: "binaries"
 
-                    dir("/home/jenkins/git/tispark") {
+                    dir("/home/jenkins/agent/git") {
                         if (sh(returnStatus: true, script: '[ -d .git ] && [ -f Makefile ] && git rev-parse --git-dir > /dev/null 2>&1') != 0) {
                             deleteDir()
                         }
@@ -101,7 +101,7 @@ def call(ghprbCommentBody) {
                     dir("go/src/github.com/pingcap/tispark") {
                         deleteDir()
                         sh """
-                        cp -R /home/jenkins/git/tispark/. ./
+                        cp -R /home/jenkins/agent/git/. ./
                         find core/src -name '*Suite*' | grep -v 'MultiColumnPKDataTypeSuite' > test
                         shuf test -o  test2
                         mv test2 test
