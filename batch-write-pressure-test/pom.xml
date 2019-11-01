@@ -11,7 +11,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spark.version>2.3.2</spark.version>
+        <spark.version>2.4.4</spark.version>
         <java.version>1.8</java.version>
         <scala.version>2.11</scala.version>
         <spark.scope>provided</spark.scope>
