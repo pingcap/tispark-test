@@ -255,12 +255,12 @@ def call(ghprbCommentBody) {
 
 def runDailyIntegrationTest() {
     call("tikv=master tidb=master pd=master mode=simple")
-    call("tikv=v3.0.3 tidb=v3.0.3 pd=v3.0.3 mode=simple")
-    call("tikv=v2.1.17 tidb=v2.1.17 pd=v2.1.17 mode=simple")
+    call("tikv=v3.0.5 tidb=v3.0.5 pd=v3.0.5 mode=simple")
+    call("tikv=v2.1.18 tidb=v2.1.18 pd=v2.1.18 mode=simple")
 
     call("tikv=master tidb=master pd=master mode=full")
-    call("tikv=v3.0.3 tidb=v3.0.3 pd=v3.0.3 mode=full")
-    call("tikv=v2.1.17 tidb=v2.1.17 pd=v2.1.17 mode=full")
+    call("tikv=v3.0.5 tidb=v3.0.5 pd=v3.0.5 mode=full")
+    call("tikv=v2.1.18 tidb=v2.1.18 pd=v2.1.18 mode=full")
 }
 
 return this
