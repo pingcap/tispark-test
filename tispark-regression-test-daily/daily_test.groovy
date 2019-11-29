@@ -162,7 +162,7 @@ def call(ghprbCommentBody) {
                     sh """
                         export MAVEN_OPTS="-Xmx6G -XX:MaxPermSize=512M -XX:ReservedCodeCacheSize=51M"
                         mvn compile ${MVN_PROFILE}
-                        { time mvn test ${MVN_PROFILE} -Dtest=moo ${mvnStr} ; } 2> mvn.log
+                        mvn test ${MVN_PROFILE} -Dtest=moo ${mvnStr}
                     """
                 }
             }
@@ -217,7 +217,6 @@ def call(ghprbCommentBody) {
                             sh "cat pd.log"
                             sh "cat tikv.log"
                             sh "cat tidb.log"
-                            sh "touch mvn.log; cat mvn.log"
                             throw err
                         }
                     }
