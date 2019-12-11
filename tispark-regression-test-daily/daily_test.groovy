@@ -273,10 +273,6 @@ def call(ghprbCommentBody) {
 }
 
 def runDailyIntegrationTest() {
-    call("tikv=master tidb=master pd=master mode=simple name=master-simple")
-    call("tikv=v3.0.5 tidb=v3.0.5 pd=v3.0.5 mode=simple name=v3.0.5-simple")
-    call("tikv=v2.1.18 tidb=v2.1.18 pd=v2.1.18 mode=simple name=v2.1.18-simple")
-
     call("tikv=master tidb=master pd=master mode=full name=master-full")
     call("tikv=v3.0.5 tidb=v3.0.5 pd=v3.0.5 mode=full name=v3.0.5-full")
     call("tikv=v2.1.18 tidb=v2.1.18 pd=v2.1.18 mode=full name=v2.1.8-full")
