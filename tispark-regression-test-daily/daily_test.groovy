@@ -10,7 +10,7 @@ def call(ghprbCommentBody) {
     def TEST_MODE = "simple"
     def PARALLEL_NUMBER = 18
     def TEST_REGION_SIZE = "normal"
-    def TEST_NAME = ""
+    def TEST_NAME = ghprbCommentBody
 
     // parse tidb branch
     def m1 = ghprbCommentBody =~ /tidb\s*=\s*([^\s\\]+)(\s|\\|$)/
@@ -273,9 +273,10 @@ def call(ghprbCommentBody) {
 }
 
 def runDailyIntegrationTest() {
-    call("tikv=master tidb=master pd=master mode=full name=master-full")
-    call("tikv=v3.0.5 tidb=v3.0.5 pd=v3.0.5 mode=full name=v3.0.5-full")
-    call("tikv=v2.1.18 tidb=v2.1.18 pd=v2.1.18 mode=full name=v2.1.8-full")
+    call("tikv=master tidb=master pd=master mode=full region=normal")
+    call("tikv=v3.0.5 tidb=v3.0.5 pd=v3.0.5 mode=full region=normal")
+    call("tikv=v2.1.18 tidb=v2.1.18 pd=v2.1.18 mode=full region=normal")
+    call("tikv=v3.0.5 tidb=v3.0.5 pd=v3.0.5 mode=full region=small")
 }
 
 return this
