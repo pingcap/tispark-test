@@ -9,6 +9,8 @@ def call(ghprbCommentBody) {
     def MVN_PROFILE = "-Pjenkins"
     def TEST_MODE = "simple"
     def PARALLEL_NUMBER = 18
+    def TEST_REGION_SIZE = "normal"
+    def TEST_NAME = ""
 
     // parse tidb branch
     def m1 = ghprbCommentBody =~ /tidb\s*=\s*([^\s\\]+)(\s|\\|$)/
@@ -44,6 +46,18 @@ def call(ghprbCommentBody) {
     def m5 = ghprbCommentBody =~ /mode\s*=\s*([^\s\\]+)(\s|\\|$)/
     if (m5) {
         TEST_MODE = "${m5[0][1]}"
+    }
+
+    // parse test region size
+    def m6 = ghprbCommentBody =~ /region\s*=\s*([^\s\\]+)(\s|\\|$)/
+    if (m6) {
+        TEST_REGION_SIZE = "${m6[0][1]}"
+    }
+
+    // parse test name
+    def m99 = ghprbCommentBody =~ /name\s*=\s*([^\s\\]+)(\s|\\|$)/
+    if (m99) {
+        TEST_NAME = "${m99[0][1]}"
     }
 
     def readfile = { filename ->
@@ -107,6 +121,12 @@ def call(ghprbCommentBody) {
                         mv test2 test
                         """
 
+                        if(TEST_REGION_SIZE  != "normal") {
+                            sh "sed -i 's/\\# region-max-size = \\\"2MB\\\"/region-max-size = \\\"2MB\\\"/' config/tikv.toml"
+                            sh "sed -i 's/\\# region-split-size = \\\"1MB\\\"/region-split-size = \\\"1MB\\\"/' config/tikv.toml"
+                            sh "cat config/tikv.toml"
+                        }
+
                         if(TEST_MODE != "simple") {
                             sh """
                             find core/src -name '*MultiColumnPKDataTypeSuite*' >> test
@@ -142,7 +162,7 @@ def call(ghprbCommentBody) {
             }
         }
 
-        stage('Integration Tests') {
+        stage("Integration Tests: ${TEST_NAME}") {
             def tests = [:]
 
             def run_tispark_test = { chunk_suffix ->
@@ -253,13 +273,13 @@ def call(ghprbCommentBody) {
 }
 
 def runDailyIntegrationTest() {
-    call("tikv=master tidb=master pd=master mode=simple")
-    call("tikv=v3.0.5 tidb=v3.0.5 pd=v3.0.5 mode=simple")
-    call("tikv=v2.1.18 tidb=v2.1.18 pd=v2.1.18 mode=simple")
+    call("tikv=master tidb=master pd=master mode=simple name=master-simple")
+    call("tikv=v3.0.5 tidb=v3.0.5 pd=v3.0.5 mode=simple name=v3.0.5-simple")
+    call("tikv=v2.1.18 tidb=v2.1.18 pd=v2.1.18 mode=simple name=v2.1.18-simple")
 
-    call("tikv=master tidb=master pd=master mode=full")
-    call("tikv=v3.0.5 tidb=v3.0.5 pd=v3.0.5 mode=full")
-    call("tikv=v2.1.18 tidb=v2.1.18 pd=v2.1.18 mode=full")
+    call("tikv=master tidb=master pd=master mode=full name=master-full")
+    call("tikv=v3.0.5 tidb=v3.0.5 pd=v3.0.5 mode=full name=v3.0.5-full")
+    call("tikv=v2.1.18 tidb=v2.1.18 pd=v2.1.18 mode=full name=v2.1.8-full")
 }
 
 return this
