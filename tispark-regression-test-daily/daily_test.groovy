@@ -281,7 +281,7 @@ def runDailyIntegrationTest(branch, notify) {
         call("tikv=v2.1.18 tidb=v2.1.18 pd=v2.1.18 mode=full region=normal", "master", notify)
         call("tikv=v3.0.5 tidb=v3.0.5 pd=v3.0.5 mode=full region=small", "master", notify)
         call("tikv=v3.0.5 tidb=v3.0.5 pd=v3.0.5 mode=full region=small", "release-2.2", notify)
-        call("tikv=v3.0.5 tidb=v3.0.5 pd=v3.0.5", "release-2.1", notify)
+        // call("tikv=v3.0.5 tidb=v3.0.5 pd=v3.0.5", "release-2.1", notify)
     } else {
       call("tikv=master tidb=master pd=master mode=full region=normal", branch, notify)
       call("tikv=v3.0.5 tidb=v3.0.5 pd=v3.0.5 mode=full region=normal", branch, notify)
