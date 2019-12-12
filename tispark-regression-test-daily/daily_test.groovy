@@ -10,7 +10,7 @@ def call(ghprbCommentBody, branch, notify) {
     def TEST_MODE = "simple"
     def PARALLEL_NUMBER = 18
     def TEST_REGION_SIZE = "normal"
-    def TEST_NAME = ghprbCommentBody + "tispark-branch=" + branch
+    def TEST_NAME = ghprbCommentBody + " tispark-branch=" + branch
 
     // parse tidb branch
     def m1 = ghprbCommentBody =~ /tidb\s*=\s*([^\s\\]+)(\s|\\|$)/
