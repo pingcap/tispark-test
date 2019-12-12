@@ -1,4 +1,4 @@
-def call(ghprbCommentBody) {
+def call(ghprbCommentBody, branch, notify) {
     env.GOROOT = "/usr/local/go"
     env.GOPATH = "/go"
     env.PATH = "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin"
@@ -109,7 +109,7 @@ def call(ghprbCommentBody) {
                         if (sh(returnStatus: true, script: '[ -d .git ] && [ -f Makefile ] && git rev-parse --git-dir > /dev/null 2>&1') != 0) {
                             deleteDir()
                         }
-                        checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: 'master']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'PruneStaleBranch'], [$class: 'CleanBeforeCheckout']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'github-sre-bot-ssh', url: 'git@github.com:pingcap/tispark.git']]]
+                        checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: branch]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'PruneStaleBranch'], [$class: 'CleanBeforeCheckout']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'github-sre-bot-ssh', url: 'git@github.com:pingcap/tispark.git']]]
                     }
 
                     dir("go/src/github.com/pingcap/tispark") {
@@ -256,27 +256,38 @@ def call(ghprbCommentBody) {
     }
 
     stage('Summary') {
-        def duration = ((System.currentTimeMillis() - taskStartTimeInMillis) / 1000 / 60).setScale(2, BigDecimal.ROUND_HALF_UP)
-        def slackmsg = "TiSpark Daily Integration Test\n" +
-        "Argument: [${ghprbCommentBody}]\n" +
-        "Result: `${taskResult}`\n" +
-        "Elapsed Time: `${duration}` Mins\n" +
-        "https://internal.pingcap.net/idc-jenkins/blue/organizations/jenkins/tispark_regression_test_daily/activity\n" +
-        "https://internal.pingcap.net/idc-jenkins/job/tispark_regression_test_daily/"
+        if (notify == "true" || notify == true) {
+            def duration = ((System.currentTimeMillis() - taskStartTimeInMillis) / 1000 / 60).setScale(2, BigDecimal.ROUND_HALF_UP)
+            def slackmsg = "TiSpark Daily Integration Test\n" +
+            "Argument: [${ghprbCommentBody}]\n" +
+            "Result: `${taskResult}`\n" +
+            "Elapsed Time: `${duration}` Mins\n" +
+            "https://internal.pingcap.net/idc-jenkins/blue/organizations/jenkins/tispark_regression_test_daily/activity\n" +
+            "https://internal.pingcap.net/idc-jenkins/job/tispark_regression_test_daily/"
 
-        if (taskResult != "SUCCESS") {
-            slackSend channel: '#tispark-daily-test', color: 'danger', teamDomain: 'pingcap', tokenCredentialId: 'slack-pingcap-token', message: "${slackmsg}"
-        } else {
-            slackSend channel: '#tispark-daily-test', color: 'good', teamDomain: 'pingcap', tokenCredentialId: 'slack-pingcap-token', message: "${slackmsg}"
+            if (taskResult != "SUCCESS") {
+                slackSend channel: '#tispark-daily-test', color: 'danger', teamDomain: 'pingcap', tokenCredentialId: 'slack-pingcap-token', message: "${slackmsg}"
+            } else {
+                slackSend channel: '#tispark-daily-test', color: 'good', teamDomain: 'pingcap', tokenCredentialId: 'slack-pingcap-token', message: "${slackmsg}"
+            }
         }
     }
 }
 
-def runDailyIntegrationTest() {
-    call("tikv=master tidb=master pd=master mode=full region=normal")
-    call("tikv=v3.0.5 tidb=v3.0.5 pd=v3.0.5 mode=full region=normal")
-    call("tikv=v2.1.18 tidb=v2.1.18 pd=v2.1.18 mode=full region=normal")
-    call("tikv=v3.0.5 tidb=v3.0.5 pd=v3.0.5 mode=full region=small")
+def runDailyIntegrationTest(branch, notify) {
+    if(branch == "all") {
+        call("tikv=master tidb=master pd=master mode=full region=normal", "master", notify)
+        call("tikv=v3.0.5 tidb=v3.0.5 pd=v3.0.5 mode=full region=normal", "master", notify)
+        call("tikv=v2.1.18 tidb=v2.1.18 pd=v2.1.18 mode=full region=normal", "master", notify)
+        call("tikv=v3.0.5 tidb=v3.0.5 pd=v3.0.5 mode=full region=small", "master", notify)
+        call("tikv=v3.0.5 tidb=v3.0.5 pd=v3.0.5 mode=full region=small", "release-2.2", notify)
+        call("tikv=v3.0.5 tidb=v3.0.5 pd=v3.0.5", "release-2.1", notify)
+    } else {
+      call("tikv=master tidb=master pd=master mode=full region=normal", branch, notify)
+      call("tikv=v3.0.5 tidb=v3.0.5 pd=v3.0.5 mode=full region=normal", branch, notify)
+      call("tikv=v2.1.18 tidb=v2.1.18 pd=v2.1.18 mode=full region=normal", branch, notify)
+      call("tikv=v3.0.5 tidb=v3.0.5 pd=v3.0.5 mode=full region=small", branch, notify)
+    }
 }
 
 return this
