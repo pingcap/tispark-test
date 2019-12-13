@@ -15,7 +15,6 @@
 
 package com.pingcap.tispark.examples
 
-import com.pingcap.tispark.{TiBatchWrite, TiDBOptions}
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.{SparkSession, TiContext}
 
@@ -51,16 +50,19 @@ object TiBatchWritePressureTest {
     val df = spark.sql(s"select * from $inputTable")
 
     // batch write
-    val options = new TiDBOptions(
-      Map(
-        "tidb.addr" -> "127.0.0.1",
-        "tidb.port" -> "4000",
-        "tidb.user"-> "root",
-        "tidb.password" -> "",
-        "database" -> outputDatabase,
-        "table" -> outputTable)
-    )
-    TiBatchWrite.writeToTiDB(df, ti, options)
+    val tidbOptions: Map[String, String] = Map(
+      "tidb.addr" -> "127.0.0.1",
+      "tidb.port" -> "4000",
+      "tidb.user"-> "root",
+      "tidb.password" -> "",
+      "database" -> outputDatabase,
+      "table" -> outputTable)
+
+    df.write
+      .format("tidb")
+      .options(tidbOptions)
+      .mode("append")
+      .save()
 
     // time
     val end = System.currentTimeMillis()
