@@ -259,7 +259,7 @@ def call(ghprbCommentBody, branch, notify) {
         if (notify == "true" || notify == true) {
             def duration = ((System.currentTimeMillis() - taskStartTimeInMillis) / 1000 / 60).setScale(2, BigDecimal.ROUND_HALF_UP)
             def slackmsg = "TiSpark Daily Integration Test\n" +
-            "Argument: [${ghprbCommentBody}]\n" +
+            "Argument: [${TEST_NAME}]\n" +
             "Result: `${taskResult}`\n" +
             "Elapsed Time: `${duration}` Mins\n" +
             "https://internal.pingcap.net/idc-jenkins/blue/organizations/jenkins/tispark_regression_test_daily/activity\n" +
