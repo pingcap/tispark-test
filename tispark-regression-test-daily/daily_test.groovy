@@ -121,7 +121,7 @@ def call(ghprbCommentBody, branch, notify) {
                         mv test2 test
                         """
 
-                        if(TEST_REGION_SIZE  != "normal") {
+                        if(TEST_REGION_SIZE  != "normal" && branch != "release-2.1") {
                             sh "sed -i 's/\\# region-max-size = \\\"2MB\\\"/region-max-size = \\\"2MB\\\"/' config/tikv.toml"
                             sh "sed -i 's/\\# region-split-size = \\\"1MB\\\"/region-split-size = \\\"1MB\\\"/' config/tikv.toml"
                             sh "cat config/tikv.toml"
@@ -152,9 +152,11 @@ def call(ghprbCommentBody, branch, notify) {
                         cp .ci/log4j-ci.properties core/src/test/resources/log4j.properties
                         bash core/scripts/version.sh
                         bash core/scripts/fetch-test-data.sh
-                        mv core/src/test core-test/src/
                         bash tikv-client/scripts/proto.sh
                         """
+                        if(branch != "release-2.1") {
+                          sh "mv core/src/test core-test/src/"
+                        }
                     }
 
                     stash includes: "go/src/github.com/pingcap/tispark/**", name: "tispark", useDefaultExcludes: false
@@ -259,7 +261,7 @@ def call(ghprbCommentBody, branch, notify) {
         if (notify == "true" || notify == true) {
             def duration = ((System.currentTimeMillis() - taskStartTimeInMillis) / 1000 / 60).setScale(2, BigDecimal.ROUND_HALF_UP)
             def slackmsg = "TiSpark Daily Integration Test\n" +
-            "Argument: [${ghprbCommentBody}]\n" +
+            "Argument: [${TEST_NAME}]\n" +
             "Result: `${taskResult}`\n" +
             "Elapsed Time: `${duration}` Mins\n" +
             "https://internal.pingcap.net/idc-jenkins/blue/organizations/jenkins/tispark_regression_test_daily/activity\n" +
@@ -276,12 +278,17 @@ def call(ghprbCommentBody, branch, notify) {
 
 def runDailyIntegrationTest(branch, notify) {
     if(branch == "all") {
+        // release-2.1
+        call("tikv=v3.0.5 tidb=v3.0.5 pd=v3.0.5 mode=full region=small", "release-2.1", notify)
+
+        // release-2.2
+        call("tikv=v3.0.5 tidb=v3.0.5 pd=v3.0.5 mode=full region=small", "release-2.2", notify)
+
+        // master
         call("tikv=master tidb=master pd=master mode=full region=normal", "master", notify)
         call("tikv=v3.0.5 tidb=v3.0.5 pd=v3.0.5 mode=full region=normal", "master", notify)
         call("tikv=v2.1.18 tidb=v2.1.18 pd=v2.1.18 mode=full region=normal", "master", notify)
         call("tikv=v3.0.5 tidb=v3.0.5 pd=v3.0.5 mode=full region=small", "master", notify)
-        call("tikv=v3.0.5 tidb=v3.0.5 pd=v3.0.5 mode=full region=small", "release-2.2", notify)
-        // call("tikv=v3.0.5 tidb=v3.0.5 pd=v3.0.5", "release-2.1", notify)
     } else {
       call("tikv=master tidb=master pd=master mode=full region=normal", branch, notify)
       call("tikv=v3.0.5 tidb=v3.0.5 pd=v3.0.5 mode=full region=normal", branch, notify)

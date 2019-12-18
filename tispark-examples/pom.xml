@@ -11,22 +11,52 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spark.version>2.3.3</spark.version>
         <java.version>1.8</java.version>
         <scala.version>2.11</scala.version>
         <spark.scope>provided</spark.scope>
+        <mysql.connector.version>5.1.44</mysql.connector.version>
     </properties>
 
     <profiles>
         <profile>
             <id>spark-2.3</id>
-            <!--Use Default Global settings-->
+            <properties>
+                <spark.version>2.3.4</spark.version>
+                <spark.major_version>2.3</spark.major_version>
+            </properties>
         </profile>
         <profile>
             <id>spark-2.4</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
             <properties>
-                <spark.version>2.4.3</spark.version>
+                <spark.version>2.4.4</spark.version>
+                <spark.major_version>2.4</spark.major_version>
             </properties>
+        </profile>
+        <profile>
+            <id>tispark-2.1.8</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.pingcap.tispark</groupId>
+                    <artifactId>tispark-core</artifactId>
+                    <version>2.1.8-spark_${spark.major_version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>tispark-2.2.0</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>com.pingcap.tispark</groupId>
+                    <artifactId>tispark-assembly</artifactId>
+                    <version>2.2.0</version>
+                </dependency>
+            </dependencies>
         </profile>
         <profile>
             <id>local-debug</id>
@@ -52,9 +82,9 @@
         </dependency>
 
         <dependency>
-            <groupId>com.pingcap.tispark</groupId>
-            <artifactId>tispark-assembly</artifactId>
-            <version>2.2.0</version>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>${mysql.connector.version}</version>
         </dependency>
     </dependencies>
 

@@ -15,7 +15,6 @@
 
 package com.pingcap.tispark.examples
 
-import com.pingcap.tispark.{TiBatchWrite, TiDBOptions}
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{IntegerType, StructField, StructType}
@@ -42,7 +41,6 @@ object TiBatchWriteRandomDataTest {
     //.setIfMissing("spark.tispark.write.without_lock_table", "true")
 
     val spark = SparkSession.builder.config(sparkConf).getOrCreate()
-    val ti = new TiContext(spark)
 
     // select
     spark.sql("show databases").show()
@@ -67,19 +65,18 @@ object TiBatchWriteRandomDataTest {
     }
 
     // batch write
-    val options = new TiDBOptions(
-      Map("tidb.addr" -> "127.0.0.1",
-        "tidb.port" -> "4000",
-        "tidb.user"-> "root",
-        "tidb.password" -> "",
-        "database" -> outputDatabase,
-        "table" -> outputTable)
-    )
-    TiBatchWrite.writeToTiDB(
-      df,
-      ti,
-      options
-    )
+    val tidbOptions: Map[String, String] = Map("tidb.addr" -> "127.0.0.1",
+      "tidb.port" -> "4000",
+      "tidb.user"-> "root",
+      "tidb.password" -> "",
+      "database" -> outputDatabase,
+      "table" -> outputTable)
+
+    df.write
+      .format("tidb")
+      .options(tidbOptions)
+      .mode("append")
+      .save()
 
     // time
     val end = System.currentTimeMillis()
