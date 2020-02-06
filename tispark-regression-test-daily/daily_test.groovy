@@ -278,6 +278,8 @@ def call(ghprbCommentBody, branch, notify) {
 
 def runDailyIntegrationTest(branch, notify) {
     if(branch == "all") {
+        call("tikv=master tidb=master pd=master mode=simple region=normal", "master", notify)
+
         // release-2.1
         call("tikv=v3.0.5 tidb=v3.0.5 pd=v3.0.5 mode=full region=small", "release-2.1", notify)
 
