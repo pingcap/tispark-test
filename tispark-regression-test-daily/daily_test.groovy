@@ -223,6 +223,7 @@ def call(ghprbCommentBody, branch, notify) {
                             killall -9 tidb-server || true
                             killall -9 tikv-server || true
                             killall -9 pd-server || true
+                            killall -9 java || true
                             sleep 10
                             bin/pd-server --name=pd --data-dir=pd --config=go/src/github.com/pingcap/tispark/config/pd.toml &>pd.log &
                             sleep 30
