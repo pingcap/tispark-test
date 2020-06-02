@@ -180,6 +180,7 @@ def call(ghprbCommentBody, branch, notify) {
                     sh """
                         rm -rf /maven/.m2/repository/*
                         rm -rf /maven/.m2/settings.xml
+                        rm -rf ~/.m2/settings.xml
                         archive_url=http://fileserver.pingcap.net/download/builds/pingcap/tispark/cache/tispark-m2-cache-latest.tar.gz
                         if [ ! "\$(ls -A /maven/.m2/repository)" ]; then curl -sL \$archive_url | tar -zx -C /maven || true; fi
                     """
@@ -196,6 +197,7 @@ def call(ghprbCommentBody, branch, notify) {
                     sh """
                         rm -rf /maven/.m2/repository/*
                         rm -rf /maven/.m2/settings.xml
+                        rm -rf ~/.m2/settings.xml
                         archive_url=http://fileserver.pingcap.net/download/builds/pingcap/tispark/cache/tispark-m2-cache-latest.tar.gz
                         if [ ! "\$(ls -A /maven/.m2/repository)" ]; then curl -sL \$archive_url | tar -zx -C /maven || true; fi
                     """
