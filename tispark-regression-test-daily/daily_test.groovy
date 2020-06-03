@@ -283,8 +283,8 @@ def call(ghprbCommentBody, branch, notify) {
     }
 }
 
-def runDailyIntegrationTest(tisparkBranch, tidbVersion, testMode, region, notify) {
-  call("tikv=${tidbVersion} tidb=${tidbVersion} pd=${tidbVersion} mode=${testMode} region=${region}", tisparkBranch, notify)
+def runDailyIntegrationTest(tisparkBranch, tidbVersion, testTiFlash, testMode, region, notify) {
+  call("tikv=${tidbVersion} tidb=${tidbVersion} pd=${tidbVersion} tiflash=${tidbVersion} test-flash=${testTiFlash} mode=${testMode} region=${region}", tisparkBranch, notify)
 }
 
 return this
