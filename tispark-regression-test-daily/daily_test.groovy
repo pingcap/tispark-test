@@ -86,9 +86,23 @@ def call(ghprbCommentBody, branch, notify) {
     taskStartTimeInMillis = System.currentTimeMillis()
     taskResult = "FAILED"
 
+    def label = "regression-test-tispark"
+
+    podTemplate(name: label, label: label, instanceCap: 10, idleMinutes: 5, containers: [
+            containerTemplate(name: 'golang', image: 'hub.pingcap.net/jenkins/centos7_golang-1.12:cached',
+                    envVars: [
+                            envVar(key: 'DOCKER_HOST', value: 'tcp://localhost:2375'),
+                    ], alwaysPullImage: true, ttyEnabled: true, command: 'cat'),
+            containerTemplate(name: 'java', image: 'hub.pingcap.net/jenkins/centos7_golang-1.13_java:cached',
+                    resourceRequestCpu: '10000m',
+                    resourceRequestMemory: '20Gi',
+                    envVars: [
+                            envVar(key: 'DOCKER_HOST', value: 'tcp://localhost:2375'),
+                    ], alwaysPullImage: true, ttyEnabled: true, command: 'cat'),
+    ]) {
     catchError {
         stage('Prepare') {
-            node ('build_go1120') {
+            node (label) {
                 println "${NODE_NAME}"
                 container("golang") {
                     deleteDir()
@@ -209,7 +223,7 @@ def call(ghprbCommentBody, branch, notify) {
             }
 
             def run_intergration_test = { chunk_suffix, run_test ->
-                node("test_java") {
+                node(label) {
                     println "${NODE_NAME}"
                     container("java") {
                         def ws = pwd()
@@ -219,7 +233,7 @@ def call(ghprbCommentBody, branch, notify) {
 
                         try {
                             sh """
-                            sudo sysctl -w net.ipv4.ip_local_port_range='10000 30000'
+                            #sudo sysctl -w net.ipv4.ip_local_port_range=\'1000 30000\'
                             killall -9 tidb-server || true
                             killall -9 tikv-server || true
                             killall -9 pd-server || true
@@ -262,6 +276,7 @@ def call(ghprbCommentBody, branch, notify) {
         }
 
         taskResult = "SUCCESS"
+    }
     }
 
     stage('Summary') {
