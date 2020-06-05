@@ -94,8 +94,8 @@ def call(ghprbCommentBody, branch, notify) {
                             envVar(key: 'DOCKER_HOST', value: 'tcp://localhost:2375'),
                     ], alwaysPullImage: true, ttyEnabled: true, command: 'cat'),
             containerTemplate(name: 'java', image: 'hub.pingcap.net/jenkins/centos7_golang-1.13_java:cached',
-                    resourceRequestCpu: '10000m',
-                    resourceRequestMemory: '20Gi',
+                    resourceRequestCpu: '8000m',
+                    resourceRequestMemory: '16Gi',
                     envVars: [
                             envVar(key: 'DOCKER_HOST', value: 'tcp://localhost:2375'),
                     ], alwaysPullImage: true, ttyEnabled: true, command: 'cat'),
