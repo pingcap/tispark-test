@@ -1,24 +1,24 @@
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
                       https://maven.apache.org/xsd/settings-1.0.0.xsd">
-  <localRepository/>
-  <interactiveMode/>
-  <usePluginRegistry/>
-  <offline/>
-  <pluginGroups/>
-  <servers/>
-  <mirrors>
-	<mirror>
-	  <id>repo1</id>
-	  <mirrorOf>central</mirrorOf>
-	  <name>maven central</name>
-	  <url>https://repo1.maven.org/maven2/</url>
-	</mirror>
-	<mirror>
-	  <id>repo2</id>
-	  <mirrorOf>central</mirrorOf>
-	  <name>maven central</name>
-	  <url>https://repo2.maven.org/maven2/</url>
-	</mirror>
+	<localRepository/>
+	<interactiveMode/>
+	<usePluginRegistry/>
+	<offline/>
+	<pluginGroups/>
+	<servers/>
+	<mirrors>
+		<mirror>
+			<id>repo1</id>
+			<mirrorOf>central</mirrorOf>
+			<name>maven central</name>
+			<url>https://repo1.maven.org/maven2/</url>
+		</mirror>
+		<mirror>
+			<id>repo2</id>
+			<mirrorOf>central</mirrorOf>
+			<name>maven central</name>
+			<url>https://repo2.maven.org/maven2/</url>
+		</mirror>
   </mirrors>
   <proxies/>
   <profiles/>
