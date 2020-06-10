@@ -6,10 +6,12 @@ def call(ghprbCommentBody, branch, notify) {
     def TIDB_BRANCH = "master"
     def TIKV_BRANCH = "master"
     def PD_BRANCH = "master"
+    def TIFLASH_BRANCH = "master"
     def MVN_PROFILE = "-Pjenkins"
     def TEST_MODE = "simple"
     def PARALLEL_NUMBER = 18
     def TEST_REGION_SIZE = "normal"
+    def TEST_TIFLASH = "false"
     def TEST_NAME = ghprbCommentBody + " tispark-branch=" + branch
 
     // parse tidb branch
@@ -36,22 +38,34 @@ def call(ghprbCommentBody, branch, notify) {
     m3 = null
     println "TIKV_BRANCH=${TIKV_BRANCH}"
 
-    // parse mvn profile
-    def m4 = ghprbCommentBody =~ /profile\s*=\s*([^\s\\]+)(\s|\\|$)/
+    // parse tiflash branch
+    def m4 = ghprbCommentBody =~ /tiflash\s*=\s*([^\s\\]+)(\s|\\|$)/
     if (m4) {
-        MVN_PROFILE = MVN_PROFILE + " -P${m4[0][1]}"
+        TIFLASH_BRANCH = "${m4[0][1]}"
+    }
+
+    // parse mvn profile
+    def m5 = ghprbCommentBody =~ /profile\s*=\s*([^\s\\]+)(\s|\\|$)/
+    if (m5) {
+        MVN_PROFILE = MVN_PROFILE + " -P${m5[0][1]}"
     }
 
     // parse test mode
-    def m5 = ghprbCommentBody =~ /mode\s*=\s*([^\s\\]+)(\s|\\|$)/
-    if (m5) {
-        TEST_MODE = "${m5[0][1]}"
+    def m6 = ghprbCommentBody =~ /mode\s*=\s*([^\s\\]+)(\s|\\|$)/
+    if (m6) {
+        TEST_MODE = "${m6[0][1]}"
     }
 
     // parse test region size
-    def m6 = ghprbCommentBody =~ /region\s*=\s*([^\s\\]+)(\s|\\|$)/
-    if (m6) {
-        TEST_REGION_SIZE = "${m6[0][1]}"
+    def m7 = ghprbCommentBody =~ /region\s*=\s*([^\s\\]+)(\s|\\|$)/
+    if (m7) {
+        TEST_REGION_SIZE = "${m7[0][1]}"
+    }
+
+    // parse test tiflash
+    def m8 = ghprbCommentBody =~ /test-flash\s*=\s*([^\s\\]+)(\s|\\|$)/
+    if (m8) {
+        TEST_TIFLASH = "${m8[0][1]}"
     }
 
     // parse test name
@@ -60,18 +74,18 @@ def call(ghprbCommentBody, branch, notify) {
         TEST_NAME = "${m99[0][1]}"
     }
 
-    def readfile = { filename ->
+    groovy.lang.Closure readfile = { filename ->
         def file = readFile filename
         return file.split("\n") as List
     }
 
-    def remove_last_str = { str ->
+    groovy.lang.Closure remove_last_str = { str ->
         return str.substring(0, str.length() - 1)
     }
 
-    def get_mvn_str = { total_chunks ->
+    groovy.lang.Closure get_mvn_str = { total_chunks ->
         def mvnStr = " -DwildcardSuites="
-        for (int i = 0 ; i < total_chunks.size() - 1; i++) {
+        for (int i = 0; i < total_chunks.size() - 1; i++) {
             // print total_chunks
             def trimStr = total_chunks[i]
             mvnStr = mvnStr + "${trimStr},"
@@ -117,6 +131,18 @@ def call(ghprbCommentBody, branch, notify) {
                     // pd
                     def pd_sha1 = sh(returnStdout: true, script: "curl ${FILE_SERVER_URL}/download/refs/pingcap/pd/${PD_BRANCH}/sha1").trim()
                     sh "curl ${FILE_SERVER_URL}/download/builds/pingcap/pd/${pd_sha1}/centos7/pd-server.tar.gz | tar xz"
+                    // tiflash
+                    if (TEST_TIFLASH != "false") {
+                        def tiflash_sha1 = sh(returnStdout: true, script: "curl ${FILE_SERVER_URL}/download/refs/pingcap/tiflash/${TIFLASH_BRANCH}/sha1").trim()
+                        sh "curl ${FILE_SERVER_URL}/download/builds/pingcap/tiflash/${TIFLASH_BRANCH}/${tiflash_sha1}/centos7/tiflash.tar.gz | tar xz"
+                        sh """
+                        cd tiflash
+                        tar -zcvf flash_cluster_manager.tgz flash_cluster_manager/
+                        rm ./flash_cluster_manager.tgz
+                        cd ..
+                        """
+                        stash includes: "tiflash/**", name: "tiflash_binary"
+                    }
                     stash includes: "bin/**", name: "binaries"
 
                     dir("/home/jenkins/agent/git") {
@@ -129,22 +155,27 @@ def call(ghprbCommentBody, branch, notify) {
                     dir("go/src/github.com/pingcap/tispark") {
                         deleteDir()
                         sh """
+                        pwd
                         cp -R /home/jenkins/agent/git/. ./
                         find core/src -name '*Suite*' | grep -v 'MultiColumnPKDataTypeSuite' > test
                         shuf test -o  test2
                         mv test2 test
                         """
 
-                        if(TEST_REGION_SIZE  != "normal" && branch != "release-2.1") {
+                        if (TEST_REGION_SIZE  != "normal" && branch != "release-2.1") {
                             sh "sed -i 's/\\# region-max-size = \\\"2MB\\\"/region-max-size = \\\"2MB\\\"/' config/tikv.toml"
                             sh "sed -i 's/\\# region-split-size = \\\"1MB\\\"/region-split-size = \\\"1MB\\\"/' config/tikv.toml"
                             sh "cat config/tikv.toml"
                         }
 
-                        if(TEST_MODE != "simple") {
+                        if (TEST_MODE != "simple") {
                             sh """
                             find core/src -name '*MultiColumnPKDataTypeSuite*' >> test
                             """
+                        }
+
+                        if (TEST_TIFLASH != "false") {
+                            sh "cp .ci/tidb_config-for-tiflash-test.properties core/src/test/resources/tidb_config.properties"
                         }
 
                         sh """
@@ -155,7 +186,7 @@ def call(ghprbCommentBody, branch, notify) {
                         """
 
                         for (int i = 1; i <= PARALLEL_NUMBER; i++) {
-                            if(i < 10) {
+                            if (i < 10) {
                                 sh """cat test_unit_0$i"""
                             } else {
                                 sh """cat test_unit_$i"""
@@ -181,9 +212,9 @@ def call(ghprbCommentBody, branch, notify) {
         stage("Integration Tests: ${TEST_NAME}") {
             def tests = [:]
 
-            def run_tispark_test = { chunk_suffix ->
+            groovy.lang.Closure run_tispark_test = { chunk_suffix ->
                 dir("go/src/github.com/pingcap/tispark") {
-                    if(chunk_suffix < 10) {
+                    if (chunk_suffix < 10) {
                         run_chunks = readfile("test_unit_0${chunk_suffix}")
                     } else {
                         run_chunks = readfile("test_unit_${chunk_suffix}")
@@ -206,7 +237,7 @@ def call(ghprbCommentBody, branch, notify) {
                 }
             }
 
-            def run_tikvclient_test = { chunk_suffix ->
+            groovy.lang.Closure run_tikvclient_test = { chunk_suffix ->
                 dir("go/src/github.com/pingcap/tispark") {
                     sh """
                         rm -rf /maven/.m2/repository/*
@@ -222,7 +253,7 @@ def call(ghprbCommentBody, branch, notify) {
                 }
             }
 
-            def run_intergration_test = { chunk_suffix, run_test ->
+            groovy.lang.Closure run_intergration_test = { chunk_suffix, run_test ->
                 node(label) {
                     println "${NODE_NAME}"
                     container("java") {
@@ -230,13 +261,38 @@ def call(ghprbCommentBody, branch, notify) {
                         deleteDir()
                         unstash 'binaries'
                         unstash 'tispark'
+                        if (TEST_TIFLASH != "false") {
+                            unstash 'tiflash_binary'
+                        }
 
                         try {
+
+                            groovy.lang.Closure isv4 = { branch_name ->
+                                if (branch_name.startsWith("v4") || branch_name.startsWith("release-4") || branch_name == "master") {
+                                    return true
+                                }
+                                return false
+                            }
+
+                            if (isv4(TIDB_BRANCH) || isv4(TIKV_BRANCH) || isv4(PD_BRANCH)) {
+                                sh """
+                                rm go/src/github.com/pingcap/tispark/config/pd.toml
+                                rm go/src/github.com/pingcap/tispark/config/tikv.toml
+                                rm go/src/github.com/pingcap/tispark/config/tidb.toml
+
+                                mv go/src/github.com/pingcap/tispark/config/pd-4.0.toml go/src/github.com/pingcap/tispark/config/pd.toml
+                                mv go/src/github.com/pingcap/tispark/config/tikv-4.0.toml go/src/github.com/pingcap/tispark/config/tikv.toml
+                                mv go/src/github.com/pingcap/tispark/config/tidb-4.0.toml go/src/github.com/pingcap/tispark/config/tidb.toml
+                                """
+                            }
+
                             sh """
                             #sudo sysctl -w net.ipv4.ip_local_port_range=\'1000 30000\'
                             killall -9 tidb-server || true
                             killall -9 tikv-server || true
                             killall -9 pd-server || true
+                            killall -9 tiflash || true
+                            touch tiflash_cmd_line.log
                             killall -9 java || true
                             sleep 10
                             bin/pd-server --name=pd --data-dir=pd --config=go/src/github.com/pingcap/tispark/config/pd.toml &>pd.log &
@@ -249,6 +305,17 @@ def call(ghprbCommentBody, branch, notify) {
                             sleep 60
                             """
 
+                            if (TEST_TIFLASH != "false") {
+                                sh """
+                                export LD_LIBRARY_PATH=/home/jenkins/agent/workspace/tispark_ghpr_integration_test/tiflash
+                                ls -l \$LD_LIBRARY_PATH
+                                tiflash/tiflash server config --config-file go/src/github.com/pingcap/tispark/config/tiflash.toml &>tiflash_cmd_line.log &
+                                ps aux | grep 'tiflash'
+                                sleep 60
+                                """
+                                sh "ps aux | grep 'tiflash'"
+                            }
+
                             timeout(180) {
                                 run_test(chunk_suffix)
                             }
@@ -260,6 +327,20 @@ def call(ghprbCommentBody, branch, notify) {
                             sh "cat pd.log"
                             sh "cat tikv.log"
                             sh "cat tidb.log"
+                            if (TEST_TIFLASH != "false") {
+                                sh """
+                                touch tiflash_cmd_line.log
+                                touch tiflash/tiflash_error.log
+                                touch tiflash/tiflash.log
+                                touch tiflash/tiflash_cluster_manager.log
+                                touch tiflash/tiflash_tikv.log
+                                """
+                                sh "cat tiflash_cmd_line.log"
+                                sh "cat tiflash/tiflash_error.log"
+                                sh "cat tiflash/tiflash.log"
+                                sh "cat tiflash/tiflash_cluster_manager.log"
+                                sh "cat tiflash/tiflash_tikv.log"
+                            }
                             throw err
                         }
                     }
