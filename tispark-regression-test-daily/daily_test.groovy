@@ -43,6 +43,8 @@ def call(ghprbCommentBody, branch, notify) {
     if (m4) {
         TIFLASH_BRANCH = "${m4[0][1]}"
     }
+    m4 = null
+    println "TIFLASH_BRANCH=${TIFLASH_BRANCH}"
 
     // parse mvn profile
     def m5 = ghprbCommentBody =~ /profile\s*=\s*([^\s\\]+)(\s|\\|$)/
@@ -120,7 +122,6 @@ def call(ghprbCommentBody, branch, notify) {
                 println "${NODE_NAME}"
                 container("golang") {
                     deleteDir()
-                    def ws = pwd()
 
                     // tidb
                     def tidb_sha1 = sh(returnStdout: true, script: "curl ${FILE_SERVER_URL}/download/refs/pingcap/tidb/${TIDB_BRANCH}/sha1").trim()
@@ -230,8 +231,7 @@ def call(ghprbCommentBody, branch, notify) {
                         if [ ! "\$(ls -A /maven/.m2/repository)" ]; then curl -sL \$archive_url | tar -zx -C /maven || true; fi
                     """
                     sh """
-                        export MAVEN_OPTS="-Xmx6G -XX:MaxPermSize=512M -XX:ReservedCodeCacheSize=51M"
-                        mvn compile ${MVN_PROFILE}
+                        export MAVEN_OPTS="-Xmx6G -XX:MaxPermSize=512M -XX:ReservedCodeCacheSize=1G"
                         mvn test ${MVN_PROFILE} -Dtest=moo ${mvnStr}
                     """
                 }
@@ -247,7 +247,7 @@ def call(ghprbCommentBody, branch, notify) {
                         if [ ! "\$(ls -A /maven/.m2/repository)" ]; then curl -sL \$archive_url | tar -zx -C /maven || true; fi
                     """
                     sh """
-                        export MAVEN_OPTS="-Xmx6G -XX:MaxPermSize=512M -XX:ReservedCodeCacheSize=512M"
+                        export MAVEN_OPTS="-Xmx6G -XX:MaxPermSize=512M -XX:ReservedCodeCacheSize=1G"
                         mvn test ${MVN_PROFILE} -am -pl tikv-client
                     """
                 }
@@ -257,7 +257,6 @@ def call(ghprbCommentBody, branch, notify) {
                 node(label) {
                     println "${NODE_NAME}"
                     container("java") {
-                        def ws = pwd()
                         deleteDir()
                         unstash 'binaries'
                         unstash 'tispark'
@@ -287,13 +286,13 @@ def call(ghprbCommentBody, branch, notify) {
                             }
 
                             sh """
-                            #sudo sysctl -w net.ipv4.ip_local_port_range=\'1000 30000\'
+                            sudo sysctl -w net.ipv4.ip_local_port_range=\'1000 30000\'
                             killall -9 tidb-server || true
                             killall -9 tikv-server || true
                             killall -9 pd-server || true
                             killall -9 tiflash || true
-                            touch tiflash_cmd_line.log
                             killall -9 java || true
+                            touch tiflash_cmd_line.log
                             sleep 10
                             bin/pd-server --name=pd --data-dir=pd --config=go/src/github.com/pingcap/tispark/config/pd.toml &>pd.log &
                             sleep 30
@@ -307,7 +306,6 @@ def call(ghprbCommentBody, branch, notify) {
 
                             if (TEST_TIFLASH != "false") {
                                 sh """
-                                pwd
                                 export LD_LIBRARY_PATH=/home/jenkins/agent/workspace/tispark_regression_test_daily/tiflash
                                 ls -l \$LD_LIBRARY_PATH
                                 tiflash/tiflash server config --config-file go/src/github.com/pingcap/tispark/config/tiflash.toml &>tiflash_cmd_line.log &
@@ -348,7 +346,7 @@ def call(ghprbCommentBody, branch, notify) {
                 }
             }
 
-           for (int i = 1; i <= PARALLEL_NUMBER; i++) {
+            for (int i = 1; i <= PARALLEL_NUMBER; i++) {
                 int x = i
                 tests["Integration test = $i"] = {run_intergration_test(x, run_tispark_test)}
             }
