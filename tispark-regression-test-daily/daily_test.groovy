@@ -307,7 +307,8 @@ def call(ghprbCommentBody, branch, notify) {
 
                             if (TEST_TIFLASH != "false") {
                                 sh """
-                                export LD_LIBRARY_PATH=/home/jenkins/agent/workspace/tispark_ghpr_integration_test/tiflash
+                                pwd
+                                export LD_LIBRARY_PATH=/home/jenkins/agent/workspace/tispark_regression_test_daily/tiflash
                                 ls -l \$LD_LIBRARY_PATH
                                 tiflash/tiflash server config --config-file go/src/github.com/pingcap/tispark/config/tiflash.toml &>tiflash_cmd_line.log &
                                 ps aux | grep 'tiflash'
