@@ -286,7 +286,7 @@ def call(ghprbCommentBody, branch, notify) {
                             }
 
                             sh """
-                            sudo sysctl -w net.ipv4.ip_local_port_range=\'1000 30000\'
+                            # sudo sysctl -w net.ipv4.ip_local_port_range=\'1000 30000\'
                             killall -9 tidb-server || true
                             killall -9 tikv-server || true
                             killall -9 pd-server || true
