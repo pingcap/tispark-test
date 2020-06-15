@@ -308,7 +308,7 @@ def call(ghprbCommentBody, branch, notify) {
                                 sh """
                                 export LD_LIBRARY_PATH=/home/jenkins/agent/workspace/tispark_regression_test_daily/tiflash
                                 ls -l \$LD_LIBRARY_PATH
-                                tiflash/tiflash server config --config-file go/src/github.com/pingcap/tispark/config/tiflash.toml &>tiflash_cmd_line.log &
+                                tiflash/tiflash server config --config-file go/src/github.com/pingcap/tispark/config/tiflash-daily-test.toml &>tiflash_cmd_line.log &
                                 ps aux | grep 'tiflash'
                                 sleep 60
                                 """
