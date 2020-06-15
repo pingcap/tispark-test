@@ -104,7 +104,7 @@ def call(ghprbCommentBody, branch, notify) {
 
     def label = "regression-test-tispark"
 
-    podTemplate(name: label, label: label, instanceCap: 10, idleMinutes: 5, containers: [
+    podTemplate(name: label, label: label, instanceCap: 10, idleMinutes: 720, containers: [
             containerTemplate(name: 'golang', image: 'hub.pingcap.net/jenkins/centos7_golang-1.12:cached',
                     envVars: [
                             envVar(key: 'DOCKER_HOST', value: 'tcp://localhost:2375'),
