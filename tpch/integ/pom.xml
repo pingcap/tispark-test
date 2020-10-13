@@ -24,7 +24,7 @@
         <scala.version>2.11</scala.version>
 
         <!-- for test -->
-        <junit.version>4.8.2</junit.version>
+        <junit.version>4.13.1</junit.version>
         <scalatest.version>2.2.4</scalatest.version>
 
         <MaxPermSize>128m</MaxPermSize>
