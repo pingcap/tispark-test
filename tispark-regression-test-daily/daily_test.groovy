@@ -12,6 +12,7 @@ def call(ghprbCommentBody, branch, notify) {
     def PARALLEL_NUMBER = 18
     def TEST_REGION_SIZE = "normal"
     def TEST_TIFLASH = "false"
+    def TEST_ALTER_PRIMARY_KEY = "true"
     def TEST_NAME = ghprbCommentBody + " tispark-branch=" + branch
 
     // parse tidb branch
@@ -68,6 +69,12 @@ def call(ghprbCommentBody, branch, notify) {
     def m8 = ghprbCommentBody =~ /test-flash\s*=\s*([^\s\\]+)(\s|\\|$)/
     if (m8) {
         TEST_TIFLASH = "${m8[0][1]}"
+    }
+
+    // parse test alter primary key
+    def m9 = ghprbCommentBody =~ /test-alter-primary-key\s*=\s*([^\s\\]+)(\s|\\|$)/
+    if (m9) {
+        TEST_ALTER_PRIMARY_KEY = "${m9[0][1]}"
     }
 
     // parse test name
@@ -144,6 +151,13 @@ def call(ghprbCommentBody, branch, notify) {
                         """
                         stash includes: "tiflash/**", name: "tiflash_binary"
                     }
+
+                    // alter-primary-key
+                    if (TEST_ALTER_PRIMARY_KEY == "false") {
+                        sh "sed -i 's/alter-primary-key = true/alter-primary-key = false/' config/tidb.toml"
+                        sh "sed -i 's/alter-primary-key = true/alter-primary-key = false/' config/tidb-4.0.toml"
+                    }
+
                     stash includes: "bin/**", name: "binaries"
 
                     dir("/home/jenkins/agent/git") {
