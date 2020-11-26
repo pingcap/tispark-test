@@ -20,7 +20,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <hadoop.version>2.5.2</hadoop.version>
-        <spark.version>2.1.0</spark.version>
+        <spark.version>2.4.7</spark.version>
         <scala.version>2.11</scala.version>
 
         <!-- for test -->
