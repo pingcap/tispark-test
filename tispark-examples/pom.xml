@@ -120,7 +120,7 @@
                     <args>
                         <arg>-unchecked</arg>
                         <arg>-deprecation</arg>
-                        <arg>-feature</arg>gs>
+                        <arg>-feature</arg>
                     </args>
                     <javacArgs>
                         <javacArg>-source</javacArg>
