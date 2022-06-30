@@ -1,4 +1,0 @@
-- hosts: spark_all
-  gather_facts: False
-  roles:
-    - tispark-deploy
